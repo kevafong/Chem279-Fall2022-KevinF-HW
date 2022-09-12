@@ -1,5 +1,18 @@
 #include <iostream>
 #include <armadillo>
+#include <string>
+
+arma::mat load(std::string txtfile)   {
+    arma::mat matrix;
+    matrix.load(txtfile,arma::raw_ascii);
+    int numAtoms = matrix(0,0);
+    matrix.shed_row(0);
+    int numRows = matrix.n_rows;
+    if (numAtoms != numRows)    {
+        throw "number of atoms does not match";
+    }
+    return matrix;
+}
 
 double distance(arma::mat i, arma::mat j)   {
     // Determines the distance of two points
@@ -68,26 +81,22 @@ double LJ_system (arma::mat system) {
 }
 
 int main() {
-    arma::mat A ;
-    A.load("test1.txt",arma::raw_ascii);
+    arma::mat A = load("test1.txt");
 	std::cout << "Test1: 2 particles at r = sigma\n" << A;
     double energyA = LJ_system(A);
     std::cout << "Total Energy: " << energyA << std::endl << std::endl;
 
-    arma::mat B ;
-    B.load("test2.txt",arma::raw_ascii);
+    arma::mat B = load("test2.txt");
 	std::cout << "Test2: 2 particles at r = sigma/2^(1/6)\n" << B ;
     double energyB = LJ_system(B);
     std::cout << "Total Energy: " << energyB << std::endl << std::endl;
 
-    arma::mat C ;
-    C.load("input.txt",arma::raw_ascii);
+    arma::mat C = load("input.txt");
 	std::cout << "Test3: Random 5 atoms\n" << C ;
     double energyC = LJ_system(C);
     std::cout << "Total Energy: " << energyC << std::endl  << std::endl;
 
-    arma::mat D ;
-    D.load("test5.txt",arma::raw_ascii);
+    arma::mat D = load("test5.txt");
 	std::cout << "Test4: atoms other than gold\n" << D ;
     double energyD = LJ_system(D);
     std::cout << "Total Energy: " << energyD << std::endl << std::endl;

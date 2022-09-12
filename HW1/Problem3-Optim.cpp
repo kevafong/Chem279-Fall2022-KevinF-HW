@@ -1,6 +1,18 @@
 #include <iostream>
 #include <armadillo>
 
+arma::mat load(std::string txtfile)   {
+    arma::mat matrix;
+    matrix.load(txtfile,arma::raw_ascii);
+    int numAtoms = matrix(0,0);
+    matrix.shed_row(0);
+    int numRows = matrix.n_rows;
+    if (numAtoms != numRows)    {
+        throw "number of atoms does not match";
+    }
+    return matrix;
+}
+
 double distance(arma::mat i, arma::mat j)   {
     // Determines the distance of two points, i and j
     double sum = 0;
@@ -129,8 +141,7 @@ arma::mat SDloop (arma::mat system, double h, double tol) {
 }
 
 int main() {
-    arma::mat B ;
-    B.load("test2.txt",arma::raw_ascii);
+    arma::mat B = load("test2.txt");
 	std::cout << "Test2: 2 particles at r = sigma/2^(1/6)\n" << B;
     std::cout << "Total Energy: " << LJ_system(B) << " kcal/mol \n" << std::endl;
 
@@ -142,8 +153,7 @@ int main() {
     std::cout << "B Stabilized:\n" << B_ ;
     std::cout << "New Total Energy: " << LJ_system(B_) << " kcal/mol \n\n" << std::endl;
 
-    arma::mat C ;
-    C.load("test3.txt",arma::raw_ascii);
+    arma::mat C = load("test3.txt");
 	std::cout << "Test3: 3 particles\n" << C;
     std::cout << "Total Energy: " << LJ_system(C) << " kcal/mol \n" << std::endl;
 
@@ -152,8 +162,7 @@ int main() {
     std::cout << "C Stabilized:\n" << C_ ;
     std::cout << "New Total Energy: " << LJ_system(C_) << " kcal/mol \n\n" << std::endl;
 
-    arma::mat D ;
-    D.load("test4.txt",arma::raw_ascii);
+    arma::mat D = load("test4.txt");
 	std::cout << "Test4: 4 particles\n" << D;
     std::cout << "Total Energy: " << LJ_system(D) << " kcal/mol \n" << std::endl;
 
