@@ -33,7 +33,7 @@ double analyticalForce(double R_ij)  {
 }
 
 double slope(arma::mat x, arma::mat y)  {
-    return (y(2)-y(0))/(x(2)=x(0));
+    return (y(3)-y(0))/(x(3)-x(0));
 }
 
 int main() {
