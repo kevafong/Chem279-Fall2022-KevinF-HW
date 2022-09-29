@@ -1,18 +1,14 @@
 #include "HW2.h"
 
 double gaussian(double x, double center, int l, int exp_)  {
-    // returns the Gaussian(x) with parameters of center, angular momentum (l), and exponent
     return pow(x-center, l)* exp(-exp_ * pow(x-center, 2));
 }
 
 double invoke (double x, double center, int l, int exp_, double (*func)(double, double, int, int)) {
-    // Invokes a function with the argument x and the parameters of center, angular momentum (l), and exponent, with pointer to function.
     return func(x, center, l, exp_);
 }
 
 double trapazoidApprox (double a, double b, double offset, int N, int l_a, int l_b, int alpha, int beta, double (*func)(double, double, int, int))    {
-    // Trapizoidal Appromization of an integral of function from a to b into N divisions. 
-    // Right now, approximation is hard coded as the product of 2 functions, potential point of modular optimization.
     double center = (a+b)/2;
     arma::vec delimiter = arma::linspace(a, b, N+1);
     delimiter.transform( [func, center, offset, l_a, l_b, alpha, beta](double x) { 
@@ -23,7 +19,6 @@ double trapazoidApprox (double a, double b, double offset, int N, int l_a, int l
 }
 
 void approxConverge (double a, double b, double offset, int l_a, int l_b, int alpha, int beta, double (*func)(double, double, int, int))  {
-    // Performs the trapzoidal approximation of the gaussian from 1 to 1000 divisions
     arma::vec ndivs = arma::logspace(0, 3, 7);
     ndivs.transform( [a, b, offset, l_a, l_b, alpha, beta, func](double N) { 
         return trapazoidApprox(a, b, offset, N, l_a, l_b, alpha, beta, *func); } );
