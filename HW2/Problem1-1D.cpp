@@ -1,5 +1,4 @@
-#include <iostream>
-#include <armadillo>
+#include "HW2.h"
 
 double gaussian(double x, double center, int l, int exp_)  {
     // returns the Gaussian(x) with parameters of center, angular momentum (l), and exponent
@@ -24,15 +23,11 @@ double trapazoidApprox (double a, double b, double offset, int N, int l_a, int l
 }
 
 void approxConverge (double a, double b, double offset, int l_a, int l_b, int alpha, int beta, double (*func)(double, double, int, int))  {
-    // Performs the trapzoidal approximation of the gaussian from 1 to 10000 divisions
-    arma::vec ndivs = arma::logspace(0, 4, 5);
+    // Performs the trapzoidal approximation of the gaussian from 1 to 1000 divisions
+    arma::vec ndivs = arma::logspace(0, 3, 7);
     ndivs.transform( [a, b, offset, l_a, l_b, alpha, beta, func](double N) { 
         return trapazoidApprox(a, b, offset, N, l_a, l_b, alpha, beta, *func); } );
     std::cout<< ndivs << std::endl;
-}
-
-void 3DOverlap  (arma::vec centerA, arma::vec centerB, int l_a, int l_b, int alpha, int beta)  {
-
 }
 
 int main() {
