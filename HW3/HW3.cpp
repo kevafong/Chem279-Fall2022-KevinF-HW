@@ -179,23 +179,28 @@ double totalEnergy (arma::vec Evalues)  {
     return 2*arma::sum(Evalues.head(Evalues.size()/2));
 }
 
-double openMoleculeFile (std::string filename)  {
+double openMoleculeFile (std::string filename, bool print)  {
     std::string molecname = filename;
     for (int i=0; i<4 ; i++)   molecname.pop_back();
     arma::mat matrix=loadfile(filename);
 
     int n = n_basisfns(matrix);
     arma::mat basisfuncs = basis_fns(matrix);
-    std::cout<< "Basis functions for "<<molecname<<":"<<std::endl;
-    std::cout<<basisfuncs<<std::endl;
-
+    if (print)  {
+        std::cout<< "Basis functions for "<<molecname<<":"<<std::endl;
+        std::cout<<basisfuncs<<std::endl;
+    }
     arma::mat S= overlapMatrix(basisfuncs);
+    if (print)  {
     std::cout<< "Overlap Matrix for "<<molecname<<":"<<std::endl;
     std::cout<<S<<std::endl;
+    }
 
     arma::mat H= huckelHamiltonian(basisfuncs,S);
+    if (print)  {
     std::cout<< "Huckel Hamiltonian for "<<molecname<<":"<<std::endl;
     std::cout<<H<<std::endl;
+    }
 
     arma::vec Evalues = generalizedEigenvalues (S,H);
     double E=totalEnergy(Evalues);
@@ -204,8 +209,10 @@ double openMoleculeFile (std::string filename)  {
 }
 
 int main() {
-    double h2 = openMoleculeFile("H2.txt");
-    double c2h2 = openMoleculeFile("C2H2.txt");
-    double c2h4 = openMoleculeFile("C2H4.txt");
+    double h2 = openMoleculeFile("H2.txt",false);
+    double c2h2 = openMoleculeFile("C2H2.txt",false);
+    double c2h4 = openMoleculeFile("C2H4.txt",true);
+    double energyDif = c2h4 - c2h2 - h2;
+    std::cout<<"\u0394H = "<<energyDif<< " eV."<<std::endl;
     return 0;
 }
