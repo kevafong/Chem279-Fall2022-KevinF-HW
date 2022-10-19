@@ -7,7 +7,10 @@ arma::mat loadfile(std::string filename)    {
     if (infile.good())  {
         std::string header;
         getline(infile, header);
-        n_atoms = header.front()-48;
+        std::string headerno = header.substr(0, header.find(' ')); 
+        n_atoms = std::stoi(headerno);
+        //std::cout<<"header:"<<header.front()<<std::endl;
+        //std::cout<<"n:"<<n_atoms<<std::endl;
         while(!infile.eof())    {
             std::string row;
             getline(infile, row);
@@ -211,8 +214,16 @@ double openMoleculeFile (std::string filename, bool print)  {
 int main() {
     double h2 = openMoleculeFile("H2.txt",false);
     double c2h2 = openMoleculeFile("C2H2.txt",false);
+    double c2h2k = openMoleculeFile("C2H2-Kevin.txt",false);
     double c2h4 = openMoleculeFile("C2H4.txt",true);
     double energyDif = c2h4 - c2h2 - h2;
     std::cout<<"\u0394H = "<<energyDif<< " eV."<<std::endl;
+    double benzene = openMoleculeFile("benzene.txt",false);
+    double c6h8ccc = openMoleculeFile("C6H8ccc.txt",false);
+    double energyDif2 = benzene - c6h8ccc + h2;
+    std::cout<<"\u0394H = "<<energyDif2<< " eV."<<std::endl;
+    double c6h8ttt = openMoleculeFile("C6H8ttt.txt",false);
+    double energyDif3 = benzene - c6h8ttt + h2;
+    std::cout<<"\u0394H = "<<energyDif3<< " eV."<<std::endl;
     return 0;
 }
