@@ -30,10 +30,11 @@ arma::mat loadfile(std::string filename)    {
 }
 
 
-void CNDO2::load_STO3G  (arma::mat &elem, std::string filename, arma::cube &STO3G)    {
-    elem.load(filename,arma::raw_ascii);
-    addnorms(elem);
-    STO3G=join_slices(STO3G,elem);
+void CNDO2::load_STO3G  (std::string filename, arma::cube &STO3G)    {
+    arma::mat X_STO3G;
+    X_STO3G.load(filename,arma::raw_ascii);
+    addnorms(X_STO3G);
+    STO3G=join_slices(STO3G,X_STO3G);
 }
 
 void CNDO2::build_vectors(arma::vec &z_access, arma::vec &z_orbitals, arma::vec &z_values)  {
@@ -374,11 +375,11 @@ void CNDO2::SCF (double tolerance)   {
 }
 
 CNDO2::CNDO2(std::string filename)  {
-    load_STO3G( H_STO3G, "H_STO3G.txt", STO3G);
-    load_STO3G( C_STO3G, "C_STO3G.txt", STO3G);
-    load_STO3G( N_STO3G, "N_STO3G.txt", STO3G);
-    load_STO3G( O_STO3G, "O_STO3G.txt", STO3G);
-    load_STO3G( F_STO3G, "F_STO3G.txt", STO3G);
+    load_STO3G("H_STO3G.txt", STO3G);
+    load_STO3G("C_STO3G.txt", STO3G);
+    load_STO3G("N_STO3G.txt", STO3G);
+    load_STO3G("O_STO3G.txt", STO3G);
+    load_STO3G("F_STO3G.txt", STO3G);
 
     CNDO2params = { {7.176, 14.051, 25.390, 32.272},
                     {arma::datum::nan, 5.572, 7.275, 9.111, 11.080},
@@ -425,17 +426,17 @@ void CNDO2::build_y (arma::mat &y) {
     int n=atom_mtx.n_rows;
     arma::mat term4= indexMat(n,n);
     term4.transform( [n,this, term4_full](double i) { 
-        return (index_y (i,n, term4_full)); 
+        return (reduceMatrix (i,n, term4_full)); 
     } );
     y= term1 - z_b_mat%ptot_a_mat - z_a_mat%ptot_b_mat - term4;
 }
 
-double CNDO2::index_y(double i, int n, arma::mat term4_full)  {
+double CNDO2::reduceMatrix(double i, int n, arma::mat matrix)  {
     int n_row, n_col;
     std::tie(n_row, n_col) = divide(i, n);
     double sum=0;
     arma::uvec sorbitals = sigma_rows();
-    return accu(term4_full.submat(sorbitals(n_row),sorbitals(n_col),sorbitals(n_row)+ z_orbitals(n_row)-1,sorbitals(n_col)+ z_orbitals(n_col)-1));
+    return accu(matrix.submat(sorbitals(n_row),sorbitals(n_col),sorbitals(n_row)+ z_orbitals(n_row)-1,sorbitals(n_col)+ z_orbitals(n_col)-1));
 }
 
 void CNDO2::build_SR (arma::mat &SR) {
@@ -597,7 +598,7 @@ void CNDO2::electronicgradient(arma::mat &gradientelec)    {
         matrixtoreduce.reshape(n_wavfns,n_wavfns);
         arma::mat row= indexMat(n,n);
         row.transform( [n,this, matrixtoreduce](double i) { 
-            return (index_y (i,n, matrixtoreduce)); 
+            return (reduceMatrix (i,n, matrixtoreduce)); 
         } );
         row.diag().zeros();
         row=sum(row);
@@ -634,8 +635,7 @@ void CNDO2::gradientsolve(arma::mat &gradient)   {
 }
 
 int main() {
-    CNDO2 C2H2= CNDO2("HF+.txt");
-    std::cout<<"access\n"<<C2H2.z_access<<std::endl;
+    CNDO2 C2H2= CNDO2("C2H4.txt");
     C2H2.SCF(10e-6);
     C2H2.gradientsolve(C2H2.gradient);
     return 0;

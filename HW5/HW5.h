@@ -10,8 +10,8 @@ class CNDO2
 {   // C++ implementation of the Complete Neclect of Differential Overlap method of Quantum Chemistry.
 public:
     CNDO2(std::string filename);                // Class constructor
-    arma::mat H_STO3G, C_STO3G, N_STO3G, O_STO3G, F_STO3G;  // Slater type orbitals of 3 primitive Gaussians
-    arma::cube STO3G;
+    //arma::mat H_STO3G, C_STO3G, N_STO3G, O_STO3G, F_STO3G;  
+    arma::cube STO3G;                           // Slater type orbitals of 3 primitive Gaussians
     arma::mat CNDO2params;                                  // CNDO/2 values for Ionization, Electronegativities, and gaussian exponents
     int p, q;                                   // p alpha electrons, q beta electrons
     arma::mat atom_mtx, basis_fns, overlap_mtx, gamma_mtx, h_mtx;   // 
@@ -20,7 +20,7 @@ public:
     arma::vec eps_a, eps_b, p_tot_a;            //  eigenvalue vectors, total density vector
     arma::vec z_orbitals, z_access, z_values;   //  turns atomic numbers into orbitals, key index for certain matrices/arrays, and z values
 
-    void load_STO3G  (arma::mat &elem, std::string filename, arma::cube &STO3G);
+    void load_STO3G  (std::string filename, arma::cube &STO3G);
         // loads STO-3G sets, adds normalization constants
 
     void build_vectors(arma::vec &z_access, arma::vec &z_orbitals, arma::vec &z_values);
@@ -118,27 +118,42 @@ public:
         //      save old densities, build fock matrices, solve eigenvalues, determine new densities
 
     //----------------------HW5--------
-    arma::mat x_munu, y_AB, SR, gammaR, VnucR, gradientelec, gradient;
+    arma::mat SR, gammaR;                       // derivatives of the overlap and gamma matrices with respect to Ra
+    arma::mat x_munu, y_AB;                     // coefficient matrices of SR and gammaR
+    arma::mat VnucR, gradientelec, gradient;    // compenents of the gradient in vectors.
 
     void build_x(arma::mat &x);
+        // builds x_munu, coefficients of SR
     double indexbeta(double i, int n);
+        // Converts the index of a matrix into sum of beta values.
 
     void build_y(arma::mat &y);
-    double index_y(double i, int n, arma::mat term4_full);
+        // builds y_AB, coefficients of gammaR
+    double reduceMatrix(double i, int n, arma::mat matrix);
+        // reduce matrix from mxm wave fns matrix, to nxn atoms matric
 
     void build_SR (arma::mat &SR);
+        // builds SR, derivatives of overlap matrix
     double indexSR (int i, int n, int d);
+        // Converts the index of a matrix into the its value of the SR matrix.
     double S_ABR(int d, arma::vec centerA, arma::vec centerB, arma::imat ls_a, arma::imat ls_b, double alpha, double beta);
+        // overlap of the derivatives of two normalized gaussians.
     double IR(int d, arma::vec centerA, arma::vec centerB, arma::imat ls_a, arma::imat ls_b, double alpha, double beta);
-
+        // one directional compenent of S_ABR in one dimension.
 
     void build_gammaR (arma::mat &gammaR);
+        // builds gammaR, derivatives of gamma matrix
     double indexGammaR(double i, int n, int d);
+        // Converts the index of a matrix into the its value of the gammaR matrix.
     double sixdimintR(int d, arma::mat directionvector, int row, int col, int j,int k,int l,int m, arma::mat sigma_fns);
-
+        // returns the six dimensional integral portion of the derivation of the 2 point electonic repulsion
     void build_VnucR (arma::mat &VnucR);
+        // builds VnucR, derivatives of Vnuc, nuclear repulsion
     double indexVnucR(double i, int n, int d);
+        // Converts the index of a matrix into the its value of the VnucR matrix.
 
     void electronicgradient(arma::mat &gradientelec);
+        // Calculates the eletronic contributions to gradient, from derivatives of overlap and gamma matrices
     void gradientsolve(arma::mat &gradient);
+        // Calculates the gradient of each atom, from electronic and nuclear contributions
 };
