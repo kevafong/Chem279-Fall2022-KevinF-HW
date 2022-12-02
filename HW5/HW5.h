@@ -11,6 +11,7 @@ class CNDO2
 public:
     CNDO2(std::string filename);                // Class constructor
     arma::mat H_STO3G, C_STO3G, N_STO3G, O_STO3G, F_STO3G;  // Slater type orbitals of 3 primitive Gaussians
+    arma::cube STO3G;
     arma::mat CNDO2params;                                  // CNDO/2 values for Ionization, Electronegativities, and gaussian exponents
     int p, q;                                   // p alpha electrons, q beta electrons
     arma::mat atom_mtx, basis_fns, overlap_mtx, gamma_mtx, h_mtx;   // 
@@ -19,7 +20,7 @@ public:
     arma::vec eps_a, eps_b, p_tot_a;            //  eigenvalue vectors, total density vector
     arma::vec z_orbitals, z_access, z_values;   //  turns atomic numbers into orbitals, key index for certain matrices/arrays, and z values
 
-    void load_STO3G  (arma::mat &elem, std::string filename);
+    void load_STO3G  (arma::mat &elem, std::string filename, arma::cube &STO3G);
         // loads STO-3G sets, adds normalization constants
 
     void build_vectors(arma::vec &z_access, arma::vec &z_orbitals, arma::vec &z_values);
@@ -117,7 +118,7 @@ public:
         //      save old densities, build fock matrices, solve eigenvalues, determine new densities
 
     //----------------------HW5--------
-    arma::mat x_munu, y_AB, SR, gammaR, VnucR, gradientelec;
+    arma::mat x_munu, y_AB, SR, gammaR, VnucR, gradientelec, gradient;
 
     void build_x(arma::mat &x);
     double indexbeta(double i, int n);
@@ -128,6 +129,8 @@ public:
     void build_SR (arma::mat &SR);
     double indexSR (int i, int n, int d);
     double S_ABR(int d, arma::vec centerA, arma::vec centerB, arma::imat ls_a, arma::imat ls_b, double alpha, double beta);
+    double IR(int d, arma::vec centerA, arma::vec centerB, arma::imat ls_a, arma::imat ls_b, double alpha, double beta);
+
 
     void build_gammaR (arma::mat &gammaR);
     double indexGammaR(double i, int n, int d);
@@ -137,4 +140,5 @@ public:
     double indexVnucR(double i, int n, int d);
 
     void electronicgradient(arma::mat &gradientelec);
+    void gradientsolve(arma::mat &gradient);
 };

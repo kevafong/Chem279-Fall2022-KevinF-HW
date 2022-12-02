@@ -30,9 +30,10 @@ arma::mat loadfile(std::string filename)    {
 }
 
 
-void CNDO2::load_STO3G  (arma::mat &elem, std::string filename)    {
+void CNDO2::load_STO3G  (arma::mat &elem, std::string filename, arma::cube &STO3G)    {
     elem.load(filename,arma::raw_ascii);
     addnorms(elem);
+    STO3G=join_slices(STO3G,elem);
 }
 
 void CNDO2::build_vectors(arma::vec &z_access, arma::vec &z_orbitals, arma::vec &z_values)  {
@@ -86,17 +87,19 @@ void CNDO2::build_basis_fns (arma::mat &basis_fns, int &p, int &q)   {
         int orbitals;
         arma::mat quantum_mat;
         arma::mat coeffs_mat;
-        if (input(i,0)==1)  {
+        if (input(i,0)<3)  {
+            arma::mat X_STO3G=STO3G.slice(z_access(i));
             orbitals=1;
             quantum_mat=arma::conv_to<arma::mat>::from(comboRepMatrix(3,0));
-            coeffs_mat=join_rows(trans(H_STO3G.col(0)), trans(H_STO3G.col(1)),trans(H_STO3G.col(3)));
+            coeffs_mat=join_rows(trans(X_STO3G.col(0)), trans(X_STO3G.col(1)),trans(X_STO3G.col(3)));
         }
-        else if (input(i,0)==6)  {
+        else{
+            arma::mat X_STO3G=STO3G.slice(z_access(i));
             orbitals=4;
             quantum_mat=arma::conv_to<arma::mat>::from(arma::join_cols(comboRepMatrix(3,0),comboRepMatrix(3,1)));
-            arma::mat c_contr=join_cols(trans(C_STO3G.col(1)),arma::repmat(trans(C_STO3G.col(2)), 3, 1));
-            arma::mat norms=join_cols(trans(C_STO3G.col(3)),arma::repmat(trans(C_STO3G.col(4)), 3, 1));
-            coeffs_mat=join_rows(arma::repmat(trans(C_STO3G.col(0)), orbitals, 1), c_contr, norms);
+            arma::mat c_contr=join_cols(trans(X_STO3G.col(1)),arma::repmat(trans(X_STO3G.col(2)), 3, 1));
+            arma::mat norms=join_cols(trans(X_STO3G.col(3)),arma::repmat(trans(X_STO3G.col(4)), 3, 1));
+            coeffs_mat=join_rows(arma::repmat(trans(X_STO3G.col(0)), orbitals, 1), c_contr, norms);
         }
         arma::mat center_mat=arma::repmat(input.row(i), orbitals, 1);   
         arma::mat atom_mat = arma::join_rows(center_mat,quantum_mat,coeffs_mat);
@@ -371,11 +374,12 @@ void CNDO2::SCF (double tolerance)   {
 }
 
 CNDO2::CNDO2(std::string filename)  {
-    load_STO3G( H_STO3G, "H_STO3G.txt");
-    load_STO3G( C_STO3G, "C_STO3G.txt");
-    load_STO3G( N_STO3G, "N_STO3G.txt");
-    load_STO3G( O_STO3G, "O_STO3G.txt");
-    load_STO3G( F_STO3G, "F_STO3G.txt");
+    load_STO3G( H_STO3G, "H_STO3G.txt", STO3G);
+    load_STO3G( C_STO3G, "C_STO3G.txt", STO3G);
+    load_STO3G( N_STO3G, "N_STO3G.txt", STO3G);
+    load_STO3G( O_STO3G, "O_STO3G.txt", STO3G);
+    load_STO3G( F_STO3G, "F_STO3G.txt", STO3G);
+
     CNDO2params = { {7.176, 14.051, 25.390, 32.272},
                     {arma::datum::nan, 5.572, 7.275, 9.111, 11.080},
                     {9,21,25,31,39}};
@@ -387,7 +391,7 @@ CNDO2::CNDO2(std::string filename)  {
     build_hmat(h_mtx);
     arma::mat zero=arma::mat(basis_fns.n_rows,basis_fns.n_rows,arma::fill::zeros);
     build_density(p_a,p_b,p_tot,p_tot_a,zero,zero); 
-    initials();  
+    //initials();  
 }
 
 // -----------------------------HW5------------------------------------------------------------------------------------------------------------------------------------------------
@@ -451,7 +455,7 @@ double CNDO2::indexSR (int i, int n, int d)  {
     std::tie(n_row, n_col) = divide(i, n);
     int A = ofAtom(n_row);
     int B = ofAtom(n_col);
-    std::cout<<n_row<<","<<n_col<<std::endl;
+    //std::cout<<n_row<<","<<n_col<<std::endl;
     if (A == B) {
         return 0;
     }
@@ -466,8 +470,8 @@ double CNDO2::indexSR (int i, int n, int d)  {
                 arma::imat quantums_mu, quantums_nu;
                 std::tie(d_kmu, N_kmu, exp_kmu, center_mu, quantums_mu) = Scomponents(fn_mu, k);
                 std::tie(d_lnu, N_lnu, exp_lnu, center_nu, quantums_nu) = Scomponents(fn_nu, l);
+
                 sum +=  d_kmu * d_lnu * N_kmu * N_lnu * S_ABR(d, center_mu, center_nu, quantums_mu, quantums_nu, exp_kmu, exp_lnu);
-                std::cout<<"sum: "<<sum<<std::endl;
             }
         }
         return sum;
@@ -476,16 +480,27 @@ double CNDO2::indexSR (int i, int n, int d)  {
 }
 
 double CNDO2::S_ABR (int d, arma::vec centerA, arma::vec centerB, arma::imat ls_a, arma::imat ls_b, double alpha, double beta) {
+    arma::vec flags;
+    flags.zeros(3);
+    flags(d)=1;
+
+    double product=1;
+
+    for (int i=0; i<3; i++) {
+        if (flags(i)==0)    {
+            product*=S_AB_1D(i, centerA, centerB, ls_a, ls_b, alpha, beta);
+        }
+        else if (flags(i)==1)   {
+            product*=IR(i, centerA, centerB, ls_a, ls_b, alpha, beta);
+        } 
+    }
+    return product;
+}
+
+double CNDO2::IR (int d, arma::vec centerA, arma::vec centerB, arma::imat ls_a, arma::imat ls_b, double alpha, double beta) {
     arma::imat ones = arma::imat(size(ls_a), arma::fill::ones);
-    // std::cout<<"newint"<<std::endl;
-    // std::cout<<"ones\n"<<ones<<std::endl;
-    // std::cout<<"ls_a\n"<<ls_a<<std::endl;
-    // std::cout<<"new lsa\n"<<ls_a - ones<<std::endl;
-    // std::cout<<"new lsa\n"<<ls_a + ones<<std::endl;
     double term1 = -ls_a(d)*S_AB_1D(d, centerA, centerB, ls_a - ones, ls_b, alpha, beta);
     double term2 =  2.0*alpha*S_AB_1D(d, centerA, centerB, ls_a + ones, ls_b, alpha, beta);
-    std::cout<<term1<<","<<term2<<std::endl;
-    std::cout<<term1+term2<<std::endl;
     return term1 + term2;
 }
 
@@ -584,6 +599,7 @@ void CNDO2::electronicgradient(arma::mat &gradientelec)    {
         row.transform( [n,this, matrixtoreduce](double i) { 
             return (index_y (i,n, matrixtoreduce)); 
         } );
+        row.diag().zeros();
         row=sum(row);
         gradientoverlap= arma::join_cols(gradientoverlap, row);
     }
@@ -599,26 +615,28 @@ void CNDO2::electronicgradient(arma::mat &gradientelec)    {
     }
     std::cout<<"gradientoverlap\n"<<gradientoverlap<<std::endl;
     std::cout<<"gradientgamma\n"<<gradientgamma<<std::endl;
-    gradientelec=gradientoverlap+gradientgamma;
+    gradientelec=-gradientoverlap+gradientgamma;
+}
+
+void CNDO2::gradientsolve(arma::mat &gradient)   {
+    build_x(x_munu);
+    build_y(y_AB);
+    build_SR(SR);
+    std::cout<<"Overlap_R\n"<<SR<<std::endl;
+    build_gammaR(gammaR);
+    std::cout<<"gammaAB_R\n"<<gammaR<<std::endl;
+    build_VnucR(VnucR);
+    std::cout<<"gradient(nuclear)\n"<<VnucR<<std::endl;
+    electronicgradient(gradientelec);
+    std::cout<<"gradient(electron)\n"<<gradientelec<<std::endl;
+    gradient=VnucR+gradientelec;
+    std::cout<<"gradient\n"<<gradient<<std::endl;
 }
 
 int main() {
-    CNDO2 C2H2= CNDO2("H2.txt");
+    CNDO2 C2H2= CNDO2("HF+.txt");
+    std::cout<<"access\n"<<C2H2.z_access<<std::endl;
     C2H2.SCF(10e-6);
-
-    C2H2.build_x(C2H2.x_munu);
-    C2H2.build_y(C2H2.y_AB);
-    std::cout<<C2H2.x_munu<<std::endl;
-    std::cout<<C2H2.y_AB<<std::endl;
-    C2H2.build_SR(C2H2.SR);
-    std::cout<<"Overlap_R\n"<<C2H2.SR<<std::endl;
-    C2H2.build_gammaR(C2H2.gammaR);
-    std::cout<<"gammaAB_R\n"<<C2H2.gammaR<<std::endl;
-
-    C2H2.build_VnucR(C2H2.VnucR);
-    std::cout<<"gradient(nuclear)\n"<<C2H2.VnucR<<std::endl;
-
-    C2H2.electronicgradient(C2H2.gradientelec);
-
+    C2H2.gradientsolve(C2H2.gradient);
     return 0;
 }
