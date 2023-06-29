@@ -11,9 +11,8 @@ This repository contains implementation for the modeling of moleculars using the
 		- HW2: Analytical and Numerical Integration for Overlap Integrals
 		- HW3: Extended Huckel model
    		- HW4: SCF Energy implementation
-    		- HW5: Analytical Gradient of SCF Energy
-    		- project: Vibrational Analysis of Huckel Model
-
+		- HW5: Analytical Gradient of SCF Energy
+   		- project: Vibrational Analysis of Huckel Model
 
 ## Final Assignment:Vibrational Analysis
 
