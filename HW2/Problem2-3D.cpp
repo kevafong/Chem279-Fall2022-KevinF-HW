@@ -107,13 +107,15 @@ void overlap3D (arma::vec centerA, arma::vec centerB, int l_a, int l_b, double a
 }
 
 int main()  {
-    std::cout<<"Combinations of 4 items in 3 spaces\n"<<comboRepMatrix(3,4)<<std::endl;
+    std::cout<<"Combinations of 2 items in 3 spaces\n"<<comboRepMatrix(3,2)<<std::endl;
 
     arma::vec centerA_ = arma::vec{0,0,0};
-    arma::vec centerB_ = arma::vec{1,1,2};
+    arma::vec centerB_ = arma::vec{1,1,1};
 
     overlap3D (centerA_, centerB_, 1, 1, 1.0, 1.0);
 
     std::cout<<"Combinations of 4 items in 3 spaces\n"<<comboRepMatrix(3,2)<<std::endl;
-    overlap3D (centerA_, centerB_, 1, 2, 1.0, 1.0);
+    overlap3D (centerA_, centerB_, 2, 2, 1.0, 1.0);
+
+    overlap3D (centerA_, centerB_, 3, 3, 1.0, 1.0);
 }

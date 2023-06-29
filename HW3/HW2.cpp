@@ -1,5 +1,34 @@
 #include "HW2.h"
 
+arma::mat loadfile(std::string filename)    {
+    std::ifstream infile(filename);
+    std::ofstream buffer("buffer.txt");
+    int n_atoms;
+    if (infile.good())  {
+        std::string header;
+        getline(infile, header);
+        std::string headerno = header.substr(0, header.find(' ')); 
+        n_atoms = std::stoi(headerno);
+        std::map<char, std::string> AtomicSymbol= {{'H',"1",},{'C',"6",},{'N',"7",},{'O',"8",},{'F',"9",},};
+        while(!infile.eof())    {
+            std::string row;
+            getline(infile, row);
+            if(isalpha(row.front()))
+                row.replace(0,1,AtomicSymbol.at(row.front()));
+            buffer << row << std::endl;
+        }
+    }
+    buffer.close();
+    arma::mat matrix;
+    matrix.load("buffer.txt");
+    if (matrix.n_rows != n_atoms)   {
+        printf("Error, wrong number of rows in header\n");
+        exit(1);
+    }
+    int status = std::remove("buffer.txt");
+    return matrix;
+}
+
 std::tuple<int, int> divide(int dividend, int divisor) {
     return  std::make_tuple(dividend / divisor, dividend % divisor);
 }

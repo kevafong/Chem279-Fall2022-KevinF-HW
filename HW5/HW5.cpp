@@ -107,8 +107,8 @@ void CNDO2::build_basis_fns (arma::mat &basis_fns, int &p, int &q)   {
         output_mat=arma::join_cols(output_mat,atom_mat);
     }
     basis_fns = output_mat;
-    p = ceil(basis_fns.n_rows/2);
-    q = floor(basis_fns.n_rows/2);
+    p = ceil(basis_fns.n_rows/2.0);
+    q = floor(basis_fns.n_rows/2.0);
 }    
 
 std::tuple<double, double, double, arma::vec, arma::imat> CNDO2::Scomponents(arma::mat basis_fn, int j) {
@@ -358,20 +358,20 @@ void CNDO2::SCF (double tolerance)   {
         equala = arma::approx_equal(p_a,pa_old,"absdiff", tolerance);
         equalb = arma::approx_equal(p_b,pb_old,"absdiff", tolerance);
         
-        // std::cout<<"Fa\n"<<f_a<<std::endl;
-        // std::cout<<"Fb\n"<<f_b<<std::endl;
-        // std::cout<<"Ea\n"<<eps_a<<std::endl;
-        // std::cout<<"Eb\n"<<eps_b<<std::endl;
-        // std::cout<<"Ca\n"<<c_a<<std::endl;
-        // std::cout<<"Cb\n"<<c_b<<std::endl;
-        // std::cout<<"Pa_new\n"<<p_a<<std::endl;
-        // std::cout<<"Pb_new\n"<<p_b<<std::endl;
-        // std::cout<<"P_t\n"<<p_tot_a<<std::endl;
+        std::cout<<"Fa\n"<<f_a<<std::endl;
+        std::cout<<"Fb\n"<<f_b<<std::endl;
+        std::cout<<"Ea\n"<<eps_a<<std::endl;
+        std::cout<<"Eb\n"<<eps_b<<std::endl;
+        std::cout<<"Ca\n"<<c_a<<std::endl;
+        std::cout<<"Cb\n"<<c_b<<std::endl;
+        std::cout<<"Pa_new\n"<<p_a<<std::endl;
+        std::cout<<"Pb_new\n"<<p_b<<std::endl;
+        std::cout<<"P_t\n"<<p_tot_a<<std::endl;
         iterations++;
     }
-    // std::cout<<"iterations :"<<iterations<<std::endl;
+    std::cout<<"iterations :"<<iterations<<std::endl;
     double energy = E_CNDO2();
-    // std::cout<<"the energy of the molecule is "<<energy<<" eV"<<std::endl;
+    std::cout<<"the energy of the molecule is "<<energy<<" eV"<<std::endl;
 }
 
 CNDO2::CNDO2(std::string filename)  {
@@ -392,7 +392,7 @@ CNDO2::CNDO2(std::string filename)  {
     build_hmat(h_mtx);
     arma::mat zero=arma::mat(basis_fns.n_rows,basis_fns.n_rows,arma::fill::zeros);
     build_density(p_a,p_b,p_tot,p_tot_a,zero,zero); 
-    //initials();  
+    initials();  
 }
 
 // -----------------------------HW5------------------------------------------------------------------------------------------------------------------------------------------------
@@ -632,6 +632,8 @@ void CNDO2::gradientsolve(arma::mat &gradient)   {
     std::cout<<"gradient(electron)\n"<<gradientelec<<std::endl;
     gradient=VnucR+gradientelec;
     std::cout<<"gradient\n"<<gradient<<std::endl;
+    std::cout<<"x\n"<<x_munu<<std::endl;
+    std::cout<<"y\n"<<y_AB<<std::endl;
 }
 
 int main() {

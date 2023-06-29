@@ -212,7 +212,7 @@ double openMoleculeFile (std::string filename, bool print)  {
 }
 
 int main() {
-    double h2 = openMoleculeFile("H2.txt",false);
+    double h2 = openMoleculeFile("H2.txt",true);
     double c2h2 = openMoleculeFile("C2H2.txt",false);
     double c2h2k = openMoleculeFile("C2H2-Kevin.txt",false);
     double c2h4 = openMoleculeFile("C2H4.txt",true);
