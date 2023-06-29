@@ -6,10 +6,10 @@ This repository contains implementation for the modeling of moleculars using the
 
 - Chem279-Fall2022-KevinF-HW
 	- Subdirectories:
-		- README.md: this file, documentation on the conceptual introduction to the modeling structures used for Computational Quantm System.
+		- README.md: this file, documentation on the conceptual introduction to the modeling structures used for Computational Quantum Systems.
 		- HW1: Potential Energy Functions, Forces, and Local Optimization
 		- HW2: Analytical and Numerical Integration for Overlap Integrals
-    		- HW3: Extended Huckel model
+		- HW3: Extended Huckel model
    		- HW4: SCF Energy implementation
     		- HW5: Analytical Gradient of SCF Energy
     		- project: Vibrational Analysis of Huckel Model
